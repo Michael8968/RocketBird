@@ -9,7 +9,9 @@
     "build": "tsc",
     "start": "node dist/app.js",
     "deploy": "tcb fn deploy api",
-    "seed:admin": "tsx src/scripts/seed-admin.ts"
+    "seed:admin": "tsx src/scripts/seed-admin.ts",
+    "seed:db": "tsx src/scripts/seed-database.ts",
+    "seed:all": "tsx src/scripts/seed-database.ts && tsx src/scripts/seed-admin.ts"
   },
   "dependencies": {
     "@cloudbase/node-sdk": "^2.6.0",

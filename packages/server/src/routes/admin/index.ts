@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import authRoutes from './auth.routes';
+import dashboardRoutes from './dashboard.routes';
 import memberRoutes from './member.routes';
 import levelRoutes from './level.routes';
 import pointsRoutes from './points.routes';
@@ -17,6 +18,7 @@ const router = Router();
 
 // 管理后台路由
 router.use('/auth', authRoutes);
+router.use('/dashboard', dashboardRoutes);
 router.use('/members', memberRoutes);
 router.use('/levels', levelRoutes);
 router.use('/points', pointsRoutes);
