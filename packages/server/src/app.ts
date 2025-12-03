@@ -1,4 +1,12 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// 根据环境加载对应的配置文件
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const envFile = process.env.NODE_ENV === 'production' ? '.env' : '.env.development';
+dotenv.config({ path: path.resolve(__dirname, '../', envFile) });
+
 import express from 'express';
 import cors from 'cors';
 import { errorMiddleware } from './middlewares/error.middleware';

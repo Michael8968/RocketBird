@@ -2,17 +2,31 @@
  * 初始化管理员数据
  * 运行: yarn workspace @rocketbird/server seed:admin
  */
-import 'dotenv/config';
-import bcrypt from 'bcryptjs';
-import { v4 as uuid } from 'uuid';
-import { initTCB } from '../config/database';
-import { AdminUser, AdminRole } from '../models/admin.model';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// 必须在其他模块导入前加载环境变量
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const envFile = process.env.NODE_ENV === 'production' ? '.env' : '.env.development';
+dotenv.config({ path: path.resolve(__dirname, '../../', envFile) });
 
 async function seedAdmin() {
+  // 使用动态导入，确保环境变量已加载
+  const bcryptModule = await import('bcryptjs');
+  const bcrypt = bcryptModule.default;
+  const { v4: uuid } = await import('uuid');
+  const { connectDatabase } = await import('../config/database');
+  const { AdminUser, AdminRole } = await import('../models/admin.model');
+
   try {
     // 初始化 TCB
-    initTCB();
+    await connectDatabase();
     console.log('TCB 数据库连接成功');
+
+    // 确保集合存在
+    await AdminRole.ensureCollection();
+    await AdminUser.ensureCollection();
 
     // 检查是否已存在超级管理员角色
     let superAdminRole = await AdminRole.findByCode('super_admin');
@@ -63,7 +77,7 @@ async function seedAdmin() {
 
     console.log('');
     console.log('✅ 初始化完成');
-
+    process.exit(0);
   } catch (error) {
     console.error('❌ 初始化失败:', error);
     process.exit(1);

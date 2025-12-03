@@ -1,4 +1,4 @@
-import { db } from '../config/database';
+import { db, getTCBApp } from '../config/database';
 import { v4 as uuid } from 'uuid';
 
 /**
@@ -19,6 +19,9 @@ export interface PaginatedResult<T> {
   pageSize: number;
 }
 
+// 已创建的集合缓存
+const createdCollections = new Set<string>();
+
 /**
  * 基础仓库类 - 封装 TCB 数据库常用操作
  */
@@ -27,6 +30,30 @@ export class BaseRepository<T extends { _id?: string }> {
 
   constructor(collectionName: string) {
     this.collectionName = collectionName;
+  }
+
+  /**
+   * 确保集合存在
+   */
+  async ensureCollection(): Promise<void> {
+    if (createdCollections.has(this.collectionName)) {
+      return;
+    }
+    try {
+      const app = getTCBApp();
+      await app.database().createCollection(this.collectionName);
+      console.log(`✅ 集合 ${this.collectionName} 创建成功`);
+    } catch (err: unknown) {
+      const error = err as { code?: string };
+      // 集合已存在则忽略
+      if (
+        error.code !== 'DATABASE_COLLECTION_EXIST' &&
+        error.code !== 'DATABASE_COLLECTION_ALREADY_EXIST'
+      ) {
+        throw err;
+      }
+    }
+    createdCollections.add(this.collectionName);
   }
 
   /**
