@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Row, Col, Card, Statistic, Table, Progress, Avatar, Space, Spin } from 'antd';
+import { Row, Col, Card, Statistic, Table, Avatar, Space, Spin } from 'antd';
 import {
   UserOutlined,
   GiftOutlined,
@@ -20,6 +20,23 @@ import {
   LevelDistribution,
   CheckinRanking,
 } from '@/services/dashboard';
+import {
+  MemberGrowthChart,
+  PointsFlowChart,
+  LevelDistributionChart,
+} from '@/components/charts';
+
+// 颜色常量
+const COLORS = {
+  PRIMARY: '#1890ff',
+  SUCCESS: '#52c41a',
+  WARNING: '#faad14',
+  DANGER: '#ff4d4f',
+  ORANGE: '#ff6b35',
+  PURPLE: '#722ed1',
+  PINK: '#eb2f96',
+  CYAN: '#13c2c2',
+};
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -62,7 +79,7 @@ const Dashboard = () => {
       render: (_, __, index) => (
         <span
           style={{
-            color: index < 3 ? '#ff6b35' : undefined,
+            color: index < 3 ? COLORS.ORANGE : undefined,
             fontWeight: index < 3 ? 'bold' : undefined,
           }}
         >
@@ -94,11 +111,6 @@ const Dashboard = () => {
     },
   ];
 
-  // 计算最大值用于归一化
-  const maxGrowth = Math.max(...memberGrowth.map((d) => d.count), 1);
-  const maxFlow = Math.max(...pointsFlow.flatMap((d) => [d.earned, d.consumed]), 1);
-  const totalLevelCount = levelDistribution.reduce((sum, d) => sum + d.count, 0) || 1;
-
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
@@ -118,7 +130,7 @@ const Dashboard = () => {
             <Statistic
               title="总会员数"
               value={stats?.members.total || 0}
-              prefix={<UserOutlined style={{ color: '#1890ff' }} />}
+              prefix={<UserOutlined style={{ color: COLORS.PRIMARY }} />}
               suffix="人"
             />
           </Card>
@@ -128,9 +140,9 @@ const Dashboard = () => {
             <Statistic
               title="今日新增"
               value={stats?.members.todayNew || 0}
-              prefix={<RiseOutlined style={{ color: '#52c41a' }} />}
+              prefix={<RiseOutlined style={{ color: COLORS.SUCCESS }} />}
               suffix="人"
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ color: COLORS.SUCCESS }}
             />
           </Card>
         </Col>
@@ -139,7 +151,7 @@ const Dashboard = () => {
             <Statistic
               title="今日打卡"
               value={stats?.checkin.today || 0}
-              prefix={<CheckSquareOutlined style={{ color: '#ff6b35' }} />}
+              prefix={<CheckSquareOutlined style={{ color: COLORS.ORANGE }} />}
               suffix="次"
             />
           </Card>
@@ -149,7 +161,7 @@ const Dashboard = () => {
             <Statistic
               title="今日积分消耗"
               value={stats?.points.todayConsumed || 0}
-              prefix={<GiftOutlined style={{ color: '#faad14' }} />}
+              prefix={<GiftOutlined style={{ color: COLORS.WARNING }} />}
               suffix="分"
             />
           </Card>
@@ -163,7 +175,7 @@ const Dashboard = () => {
             <Statistic
               title="活跃会员"
               value={stats?.members.active || 0}
-              prefix={<UserOutlined style={{ color: '#722ed1' }} />}
+              prefix={<UserOutlined style={{ color: COLORS.PURPLE }} />}
               suffix="人"
             />
           </Card>
@@ -173,7 +185,7 @@ const Dashboard = () => {
             <Statistic
               title="待审核打卡"
               value={stats?.checkin.pending || 0}
-              prefix={<ClockCircleOutlined style={{ color: '#fa8c16' }} />}
+              prefix={<ClockCircleOutlined style={{ color: COLORS.WARNING }} />}
               suffix="条"
             />
           </Card>
@@ -183,7 +195,7 @@ const Dashboard = () => {
             <Statistic
               title="待核销订单"
               value={stats?.orders.pending || 0}
-              prefix={<ShoppingOutlined style={{ color: '#eb2f96' }} />}
+              prefix={<ShoppingOutlined style={{ color: COLORS.PINK }} />}
               suffix="单"
             />
           </Card>
@@ -193,7 +205,7 @@ const Dashboard = () => {
             <Statistic
               title="累计积分发放"
               value={stats?.points.totalEarned || 0}
-              prefix={<GiftOutlined style={{ color: '#13c2c2' }} />}
+              prefix={<GiftOutlined style={{ color: COLORS.CYAN }} />}
               suffix="分"
             />
           </Card>
@@ -204,95 +216,12 @@ const Dashboard = () => {
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
         <Col xs={24} lg={12}>
           <Card title="会员增长趋势 (近7天)">
-            <div style={{ padding: '16px 0' }}>
-              {memberGrowth.length > 0 ? (
-                <div style={{ display: 'flex', alignItems: 'flex-end', height: 200, gap: 8 }}>
-                  {memberGrowth.map((item, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: '100%',
-                          maxWidth: 40,
-                          height: Math.max((item.count / maxGrowth) * 160, 4),
-                          background: 'linear-gradient(180deg, #1890ff 0%, #69c0ff 100%)',
-                          borderRadius: 4,
-                          transition: 'height 0.3s',
-                        }}
-                      />
-                      <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-                        {item.date.slice(5)}
-                      </div>
-                      <div style={{ fontSize: 12, fontWeight: 'bold' }}>{item.count}</div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>
-                  暂无数据
-                </div>
-              )}
-            </div>
+            <MemberGrowthChart data={memberGrowth} />
           </Card>
         </Col>
         <Col xs={24} lg={12}>
           <Card title="积分流动分析 (近7天)">
-            <div style={{ padding: '16px 0' }}>
-              {pointsFlow.length > 0 ? (
-                <div style={{ display: 'flex', alignItems: 'flex-end', height: 200, gap: 8 }}>
-                  {pointsFlow.map((item, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 140 }}>
-                        <div
-                          style={{
-                            width: 16,
-                            height: Math.max((item.earned / maxFlow) * 140, 4),
-                            background: '#52c41a',
-                            borderRadius: 2,
-                          }}
-                          title={`发放: ${item.earned}`}
-                        />
-                        <div
-                          style={{
-                            width: 16,
-                            height: Math.max((item.consumed / maxFlow) * 140, 4),
-                            background: '#ff6b35',
-                            borderRadius: 2,
-                          }}
-                          title={`消耗: ${item.consumed}`}
-                        />
-                      </div>
-                      <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-                        {item.date.slice(5)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>
-                  暂无数据
-                </div>
-              )}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 16 }}>
-                <span><span style={{ display: 'inline-block', width: 12, height: 12, background: '#52c41a', borderRadius: 2, marginRight: 4 }} />发放</span>
-                <span><span style={{ display: 'inline-block', width: 12, height: 12, background: '#ff6b35', borderRadius: 2, marginRight: 4 }} />消耗</span>
-              </div>
-            </div>
+            <PointsFlowChart data={pointsFlow} />
           </Card>
         </Col>
       </Row>
@@ -300,32 +229,7 @@ const Dashboard = () => {
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
         <Col xs={24} lg={12}>
           <Card title="等级分布">
-            <div style={{ padding: '16px 0' }}>
-              {levelDistribution.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {levelDistribution.map((level) => (
-                    <div key={level.levelId}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span>{level.levelName}</span>
-                        <span style={{ color: '#666' }}>{level.count} 人 ({level.percentage.toFixed(1)}%)</span>
-                      </div>
-                      <Progress
-                        percent={(level.count / totalLevelCount) * 100}
-                        showInfo={false}
-                        strokeColor={{
-                          '0%': '#1890ff',
-                          '100%': '#69c0ff',
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>
-                  暂无数据
-                </div>
-              )}
-            </div>
+            <LevelDistributionChart data={levelDistribution} />
           </Card>
         </Col>
         <Col xs={24} lg={12}>

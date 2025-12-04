@@ -10,6 +10,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "@ant-design/charts": "^2.6.6",
     "@ant-design/icons": "^5.3.5",
     "@ant-design/pro-components": "^2.6.52",
     "@rocketbird/shared": "*",
