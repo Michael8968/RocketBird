@@ -18,35 +18,42 @@
 
     <!-- 积分获取方式 -->
     <view class="section">
-      <view class="section-title">赚取积分</view>
+      <text class="section-title">赚取积分</text>
       <view class="earn-list">
-        <view class="earn-item" @click="navigateTo('/pages/checkin/index')">
-          <view class="icon checkin"></view>
-          <view class="info">
-            <text class="title">打卡分享</text>
-            <text class="desc">每次打卡可获得积分</text>
-          </view>
-          <text class="points">+10</text>
-        </view>
-        <view class="earn-item" @click="navigateTo('/pages/referral/index')">
-          <view class="icon referral"></view>
-          <view class="info">
-            <text class="title">推荐好友</text>
-            <text class="desc">邀请好友注册得积分</text>
-          </view>
-          <text class="points">+100</text>
-        </view>
+        <ListItem
+          icon-background="linear-gradient(135deg, #52c41a, #73d13d)"
+          title="打卡分享"
+          desc="每次打卡可获得积分"
+          right-text="+10"
+          :right-text-color="primaryColor"
+          url="/pages/checkin/index"
+        />
+        <ListItem
+          icon-background="linear-gradient(135deg, #1890ff, #40a9ff)"
+          title="推荐好友"
+          desc="邀请好友注册得积分"
+          right-text="+100"
+          :right-text-color="primaryColor"
+          url="/pages/referral/index"
+        />
       </view>
     </view>
 
     <!-- 热门兑换 -->
     <view class="section">
-      <view class="section-header">
-        <text class="section-title">热门兑换</text>
-        <text class="more" @click="navigateTo('/pages/points/mall')">更多</text>
-      </view>
+      <SectionHeader
+        title="热门兑换"
+        show-more
+        more-text="更多"
+        more-url="/pages/points/mall"
+      />
       <view class="product-grid">
-        <view class="product-item" v-for="product in hotProducts" :key="product.productId" @click="goProductDetail(product.productId)">
+        <view
+          class="product-item"
+          v-for="product in hotProducts"
+          :key="product.productId"
+          @click="goProductDetail(product.productId)"
+        >
           <image class="product-image" :src="product.coverImage" mode="aspectFill" />
           <text class="product-name">{{ product.name }}</text>
           <view class="product-price">
@@ -60,11 +67,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import { useUserStore } from '@/stores';
 import { pointsApi } from '@/api';
+import { SectionHeader, ListItem } from '@/components';
 import type { IPointsProduct } from '@rocketbird/shared';
+
+const primaryColor = '#FF6B35';
 
 const userStore = useUserStore();
 const availablePoints = computed(() => userStore.userInfo?.availablePoints || 0);
@@ -102,18 +112,18 @@ onShow(() => {
 
 .points-card {
   background: linear-gradient(135deg, $primary-color, $primary-light);
-  margin: 24rpx;
+  margin: $spacing-md;
   padding: 40rpx;
   border-radius: $radius-lg;
   color: #fff;
 
   .points-info {
     text-align: center;
-    margin-bottom: 32rpx;
+    margin-bottom: $spacing-lg;
 
     .label {
       display: block;
-      font-size: 28rpx;
+      font-size: $font-md;
       opacity: 0.9;
     }
 
@@ -121,13 +131,13 @@ onShow(() => {
       display: block;
       font-size: 72rpx;
       font-weight: 600;
-      margin-top: 8rpx;
+      margin-top: $spacing-xs;
     }
   }
 
   .actions {
     display: flex;
-    gap: 24rpx;
+    gap: $spacing-md;
 
     .action-btn {
       flex: 1;
@@ -135,7 +145,7 @@ onShow(() => {
       line-height: 72rpx;
       text-align: center;
       border-radius: $radius-full;
-      font-size: 28rpx;
+      font-size: $font-md;
       background: rgba(255, 255, 255, 0.2);
 
       &.primary {
@@ -148,85 +158,22 @@ onShow(() => {
 
 .section {
   background: #fff;
-  margin: 24rpx;
-  padding: 24rpx;
+  margin: $spacing-md;
+  padding: $spacing-md;
   border-radius: $radius-lg;
 
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24rpx;
-
-    .more {
-      font-size: 26rpx;
-      color: $text-secondary;
-    }
-  }
-
   .section-title {
-    font-size: 32rpx;
+    font-size: $font-lg;
     font-weight: 500;
     color: $text-color;
-    margin-bottom: 24rpx;
-  }
-}
-
-.earn-list {
-  .earn-item {
-    display: flex;
-    align-items: center;
-    padding: 24rpx 0;
-    border-bottom: 1rpx solid $border-color;
-
-    &:last-child {
-      border-bottom: none;
-    }
-
-    .icon {
-      width: 80rpx;
-      height: 80rpx;
-      border-radius: $radius-md;
-      margin-right: 24rpx;
-
-      &.checkin {
-        background: linear-gradient(135deg, #52c41a, #73d13d);
-      }
-
-      &.referral {
-        background: linear-gradient(135deg, #1890ff, #40a9ff);
-      }
-    }
-
-    .info {
-      flex: 1;
-
-      .title {
-        display: block;
-        font-size: 30rpx;
-        color: $text-color;
-      }
-
-      .desc {
-        display: block;
-        font-size: 24rpx;
-        color: $text-secondary;
-        margin-top: 4rpx;
-      }
-    }
-
-    .points {
-      font-size: 32rpx;
-      font-weight: 500;
-      color: $primary-color;
-    }
+    margin-bottom: $spacing-md;
   }
 }
 
 .product-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 24rpx;
+  gap: $spacing-md;
 
   .product-item {
     width: calc(50% - 12rpx);
@@ -240,7 +187,7 @@ onShow(() => {
     .product-name {
       display: block;
       margin-top: 12rpx;
-      font-size: 28rpx;
+      font-size: $font-md;
       color: $text-color;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -248,16 +195,16 @@ onShow(() => {
     }
 
     .product-price {
-      margin-top: 8rpx;
+      margin-top: $spacing-xs;
 
       .points {
-        font-size: 32rpx;
+        font-size: $font-lg;
         font-weight: 500;
         color: $primary-color;
       }
 
       .unit {
-        font-size: 24rpx;
+        font-size: $font-sm;
         color: $text-secondary;
         margin-left: 4rpx;
       }

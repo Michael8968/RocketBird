@@ -54,10 +54,11 @@
 
     <!-- 推荐内容 -->
     <view class="section">
-      <view class="section-header">
-        <text class="title">推荐健身餐</text>
-        <text class="more" @click="navigateTo('/pages/meals/index')">查看更多</text>
-      </view>
+      <SectionHeader
+        title="推荐健身餐"
+        show-more
+        more-url="/pages/meals/index"
+      />
       <scroll-view class="meal-list" scroll-x>
         <view class="meal-item" v-for="meal in recommendedMeals" :key="meal.mealId" @click="goMealDetail(meal.mealId)">
           <image class="meal-cover" :src="meal.coverImage" mode="aspectFill" />
@@ -73,6 +74,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import { useUserStore } from '@/stores';
+import { SectionHeader } from '@/components';
 import type { IBanner, IFitnessMeal } from '@rocketbird/shared';
 
 const userStore = useUserStore();
@@ -124,13 +126,13 @@ onShow(() => {
 
 .user-card {
   background: linear-gradient(135deg, $primary-color, $primary-light);
-  padding: 40rpx 32rpx;
+  padding: 40rpx $spacing-lg;
   color: #fff;
 
   .user-info {
     display: flex;
     align-items: center;
-    margin-bottom: 32rpx;
+    margin-bottom: $spacing-lg;
 
     .avatar {
       width: 100rpx;
@@ -140,20 +142,20 @@ onShow(() => {
     }
 
     .info {
-      margin-left: 24rpx;
+      margin-left: $spacing-md;
 
       .nickname {
-        font-size: 36rpx;
+        font-size: $font-xl;
         font-weight: 500;
       }
 
       .level-badge {
         display: inline-block;
-        margin-top: 8rpx;
-        padding: 4rpx 16rpx;
+        margin-top: $spacing-xs;
+        padding: 4rpx $spacing-sm;
         background: rgba(255, 255, 255, 0.2);
         border-radius: 20rpx;
-        font-size: 24rpx;
+        font-size: $font-sm;
       }
     }
   }
@@ -172,7 +174,7 @@ onShow(() => {
       }
 
       .label {
-        font-size: 24rpx;
+        font-size: $font-sm;
         opacity: 0.8;
       }
     }
@@ -182,7 +184,7 @@ onShow(() => {
 .quick-entry {
   display: flex;
   background: #fff;
-  padding: 32rpx 0;
+  padding: $spacing-lg 0;
 
   .entry-item {
     flex: 1;
@@ -197,14 +199,14 @@ onShow(() => {
     }
 
     text {
-      font-size: 24rpx;
+      font-size: $font-sm;
       color: $text-color;
     }
   }
 }
 
 .banner-section {
-  margin: 24rpx 32rpx;
+  margin: $spacing-md $spacing-lg;
 
   .banner-swiper {
     height: 280rpx;
@@ -219,28 +221,10 @@ onShow(() => {
 }
 
 .section {
-  margin: 24rpx 32rpx;
+  margin: $spacing-md $spacing-lg;
   background: #fff;
   border-radius: $radius-lg;
-  padding: 24rpx;
-
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24rpx;
-
-    .title {
-      font-size: 32rpx;
-      font-weight: 500;
-      color: $text-color;
-    }
-
-    .more {
-      font-size: 26rpx;
-      color: $text-secondary;
-    }
-  }
+  padding: $spacing-md;
 
   .meal-list {
     white-space: nowrap;
@@ -248,7 +232,7 @@ onShow(() => {
     .meal-item {
       display: inline-block;
       width: 240rpx;
-      margin-right: 24rpx;
+      margin-right: $spacing-md;
 
       .meal-cover {
         width: 240rpx;
@@ -259,7 +243,7 @@ onShow(() => {
       .meal-name {
         display: block;
         margin-top: 12rpx;
-        font-size: 28rpx;
+        font-size: $font-md;
         color: $text-color;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -267,7 +251,7 @@ onShow(() => {
       }
 
       .meal-calories {
-        font-size: 24rpx;
+        font-size: $font-sm;
         color: $text-secondary;
       }
     }

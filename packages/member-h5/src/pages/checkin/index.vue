@@ -1,44 +1,49 @@
 <template>
   <view class="checkin-page">
     <!-- 打卡统计 -->
-    <view class="stats-card">
-      <view class="stat-item">
-        <text class="value">{{ stats.totalCheckins }}</text>
-        <text class="label">累计打卡</text>
-      </view>
-      <view class="stat-item">
-        <text class="value">{{ stats.continuousDays }}</text>
-        <text class="label">连续打卡</text>
-      </view>
-      <view class="stat-item">
-        <text class="value">{{ stats.totalPoints }}</text>
-        <text class="label">获得积分</text>
-      </view>
-    </view>
+    <StatCard
+      :stats="statItems"
+      gradient="linear-gradient(135deg, #52c41a, #73d13d)"
+    />
 
     <!-- 打卡主题 -->
     <view class="section">
-      <view class="section-title">选择打卡主题</view>
+      <text class="section-title">选择打卡主题</text>
       <view class="theme-list">
-        <view class="theme-item" v-for="theme in themes" :key="theme.themeId" @click="selectTheme(theme)">
-          <image class="theme-cover" :src="theme.coverImage" mode="aspectFill" />
-          <view class="theme-info">
-            <text class="theme-name">{{ theme.name }}</text>
-            <text class="theme-reward">+{{ theme.rewardPoints }}积分</text>
-          </view>
-        </view>
+        <ListItem
+          v-for="theme in themes"
+          :key="theme.themeId"
+          :icon-image="theme.coverImage"
+          icon-size="120rpx"
+          :title="theme.name"
+          :right-text="`+${theme.rewardPoints}积分`"
+          :right-text-color="primaryColor"
+          @click="selectTheme(theme)"
+        />
       </view>
     </view>
 
     <!-- 我的打卡 -->
     <view class="section">
-      <view class="section-header">
-        <text class="section-title">我的打卡</text>
-        <text class="more" @click="navigateTo('/pages/checkin/records')">全部记录</text>
-      </view>
+      <SectionHeader
+        title="我的打卡"
+        show-more
+        more-text="全部记录"
+        more-url="/pages/checkin/records"
+      />
       <view class="record-list" v-if="records.length">
-        <view class="record-item" v-for="record in records" :key="record.recordId" @click="goRecordDetail(record.recordId)">
-          <image class="record-image" :src="record.images[0]" mode="aspectFill" v-if="record.images.length" />
+        <view
+          class="record-item"
+          v-for="record in records"
+          :key="record.recordId"
+          @click="goRecordDetail(record.recordId)"
+        >
+          <image
+            class="record-image"
+            :src="record.images[0]"
+            mode="aspectFill"
+            v-if="record.images.length"
+          />
           <view class="record-info">
             <text class="record-theme">{{ record.themeName }}</text>
             <text class="record-content">{{ record.content || '暂无内容' }}</text>
@@ -49,9 +54,11 @@
           </view>
         </view>
       </view>
-      <view class="empty" v-else>
-        <text>暂无打卡记录，快去打卡吧~</text>
-      </view>
+      <EmptyState
+        v-else
+        text="暂无打卡记录，快去打卡吧~"
+        :show-image="false"
+      />
     </view>
 
     <!-- 立即打卡按钮 -->
@@ -62,11 +69,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import { checkinApi } from '@/api';
 import { formatDate } from '@rocketbird/shared';
+import { StatCard, SectionHeader, ListItem, EmptyState } from '@/components';
 import type { ICheckinTheme, ICheckinRecord } from '@rocketbird/shared';
+
+const primaryColor = '#FF6B35';
 
 const stats = ref({
   totalCheckins: 0,
@@ -74,12 +84,14 @@ const stats = ref({
   totalPoints: 0,
 });
 
+const statItems = computed(() => [
+  { value: stats.value.totalCheckins, label: '累计打卡' },
+  { value: stats.value.continuousDays, label: '连续打卡' },
+  { value: stats.value.totalPoints, label: '获得积分' },
+]);
+
 const themes = ref<ICheckinTheme[]>([]);
 const records = ref<ICheckinRecord[]>([]);
-
-const navigateTo = (url: string) => {
-  uni.navigateTo({ url });
-};
 
 const selectTheme = (theme: ICheckinTheme) => {
   uni.navigateTo({ url: `/pages/checkin/create?themeId=${theme.themeId}` });
@@ -123,93 +135,17 @@ onShow(() => {
   padding-bottom: 160rpx;
 }
 
-.stats-card {
-  display: flex;
-  background: linear-gradient(135deg, #52c41a, #73d13d);
-  margin: 24rpx;
-  padding: 40rpx;
-  border-radius: $radius-lg;
-  color: #fff;
-
-  .stat-item {
-    flex: 1;
-    text-align: center;
-
-    .value {
-      display: block;
-      font-size: 48rpx;
-      font-weight: 600;
-    }
-
-    .label {
-      display: block;
-      font-size: 24rpx;
-      opacity: 0.9;
-      margin-top: 8rpx;
-    }
-  }
-}
-
 .section {
   background: #fff;
-  margin: 24rpx;
-  padding: 24rpx;
+  margin: $spacing-md;
+  padding: $spacing-md;
   border-radius: $radius-lg;
 
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24rpx;
-
-    .more {
-      font-size: 26rpx;
-      color: $text-secondary;
-    }
-  }
-
   .section-title {
-    font-size: 32rpx;
+    font-size: $font-lg;
     font-weight: 500;
     color: $text-color;
-    margin-bottom: 24rpx;
-  }
-}
-
-.theme-list {
-  .theme-item {
-    display: flex;
-    align-items: center;
-    padding: 20rpx 0;
-    border-bottom: 1rpx solid $border-color;
-
-    &:last-child {
-      border-bottom: none;
-    }
-
-    .theme-cover {
-      width: 120rpx;
-      height: 120rpx;
-      border-radius: $radius-md;
-    }
-
-    .theme-info {
-      flex: 1;
-      margin-left: 24rpx;
-
-      .theme-name {
-        display: block;
-        font-size: 30rpx;
-        color: $text-color;
-      }
-
-      .theme-reward {
-        display: block;
-        font-size: 26rpx;
-        color: $primary-color;
-        margin-top: 8rpx;
-      }
-    }
+    margin-bottom: $spacing-md;
   }
 }
 
@@ -236,13 +172,13 @@ onShow(() => {
 
       .record-theme {
         display: block;
-        font-size: 28rpx;
+        font-size: $font-md;
         color: $text-color;
       }
 
       .record-content {
         display: block;
-        font-size: 24rpx;
+        font-size: $font-sm;
         color: $text-secondary;
         margin-top: 4rpx;
         overflow: hidden;
@@ -259,7 +195,7 @@ onShow(() => {
     }
 
     .record-status {
-      font-size: 24rpx;
+      font-size: $font-sm;
       color: $text-placeholder;
 
       &.shared {
@@ -269,20 +205,12 @@ onShow(() => {
   }
 }
 
-.empty {
-  text-align: center;
-  padding: 60rpx 0;
-  color: $text-placeholder;
-  font-size: 28rpx;
-}
-
 .bottom-bar {
   position: fixed;
-  /* 底部留出 tabBar 的高度 (约100rpx + 安全区域) */
   bottom: calc(100rpx + env(safe-area-inset-bottom));
   left: 0;
   right: 0;
-  padding: 24rpx 32rpx;
+  padding: $spacing-md $spacing-lg;
   background: #fff;
   box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
   z-index: 99;
@@ -293,7 +221,7 @@ onShow(() => {
     line-height: 88rpx;
     background: linear-gradient(135deg, #52c41a, #73d13d);
     color: #fff;
-    font-size: 32rpx;
+    font-size: $font-lg;
     font-weight: 500;
     border-radius: $radius-full;
   }

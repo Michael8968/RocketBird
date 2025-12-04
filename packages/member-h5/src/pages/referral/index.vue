@@ -54,39 +54,37 @@
 
     <!-- 邀请记录 -->
     <view class="records-section">
-      <view class="section-title">邀请记录</view>
+      <text class="section-title">邀请记录</text>
       <view class="record-list" v-if="records.length">
-        <view
-          class="record-item"
+        <ListItem
           v-for="record in records"
           :key="record.recordId"
+          :icon-image="record.inviteeAvatar || '/static/default-avatar.png'"
+          icon-size="80rpx"
+          :title="record.inviteeName || '新用户'"
+          :desc="formatDate(record.createdAt)"
         >
-          <view class="record-avatar">
-            <image :src="record.inviteeAvatar || '/static/default-avatar.png'" mode="aspectFill" />
-          </view>
-          <view class="record-info">
-            <text class="record-name">{{ record.inviteeName || '新用户' }}</text>
-            <text class="record-time">{{ formatDate(record.createdAt) }}</text>
-          </view>
-          <view class="record-reward">
+          <template #action>
             <text class="reward-text" v-if="record.status === 1">+{{ record.reward }}积分</text>
             <text class="pending-text" v-else>待完成</text>
-          </view>
-        </view>
+          </template>
+        </ListItem>
       </view>
 
       <!-- 加载更多 -->
-      <view class="load-more" v-if="hasMore">
-        <text @click="loadMore">加载更多</text>
-      </view>
-      <view class="no-more" v-else-if="records.length > 0">
-        <text>没有更多了</text>
-      </view>
+      <LoadMore
+        v-if="records.length > 0"
+        :loading="loading"
+        :has-more="hasMore"
+        @load="loadMore"
+      />
 
       <!-- 空状态 -->
-      <view class="empty" v-if="!loading && records.length === 0">
-        <text>暂无邀请记录，快去邀请好友吧~</text>
-      </view>
+      <EmptyState
+        v-if="!loading && records.length === 0"
+        text="暂无邀请记录，快去邀请好友吧~"
+        :show-image="false"
+      />
     </view>
 
     <!-- 分享海报弹窗 -->
@@ -106,6 +104,7 @@ import { ref } from 'vue';
 import { onShow, onReachBottom } from '@dcloudio/uni-app';
 import { referralApi } from '@/api';
 import { formatDate } from '@rocketbird/shared';
+import { ListItem, EmptyState, LoadMore } from '@/components';
 import type { InviteRecord, MyInviteCode, InviteStats } from '@rocketbird/shared';
 
 const loading = ref(false);
@@ -245,7 +244,7 @@ onReachBottom(() => {
 
 .invite-card {
   background: linear-gradient(135deg, #667eea, #764ba2);
-  margin: 24rpx;
+  margin: $spacing-md;
   padding: 40rpx;
   border-radius: $radius-lg;
   color: #fff;
@@ -262,7 +261,7 @@ onReachBottom(() => {
   }
 
   .invite-code-section {
-    margin-top: 32rpx;
+    margin-top: $spacing-lg;
 
     .code-label {
       font-size: 26rpx;
@@ -286,7 +285,7 @@ onReachBottom(() => {
 
       .copy-btn {
         font-size: 26rpx;
-        padding: 8rpx 24rpx;
+        padding: $spacing-xs $spacing-md;
         background: #fff;
         color: #667eea;
         border-radius: $radius-sm;
@@ -296,8 +295,8 @@ onReachBottom(() => {
 
   .reward-info {
     display: flex;
-    margin-top: 32rpx;
-    padding: 24rpx;
+    margin-top: $spacing-lg;
+    padding: $spacing-md;
     background: rgba(255, 255, 255, 0.15);
     border-radius: $radius-md;
 
@@ -305,7 +304,7 @@ onReachBottom(() => {
       flex: 1;
       display: flex;
       align-items: center;
-      gap: 16rpx;
+      gap: $spacing-sm;
 
       .reward-icon {
         font-size: 40rpx;
@@ -314,13 +313,13 @@ onReachBottom(() => {
       .reward-content {
         .reward-title {
           display: block;
-          font-size: 24rpx;
+          font-size: $font-sm;
           opacity: 0.9;
         }
 
         .reward-value {
           display: block;
-          font-size: 32rpx;
+          font-size: $font-lg;
           font-weight: 600;
           margin-top: 4rpx;
         }
@@ -330,7 +329,7 @@ onReachBottom(() => {
     .reward-divider {
       width: 1rpx;
       background: rgba(255, 255, 255, 0.3);
-      margin: 0 24rpx;
+      margin: 0 $spacing-md;
     }
   }
 
@@ -338,10 +337,10 @@ onReachBottom(() => {
     width: 100%;
     height: 88rpx;
     line-height: 88rpx;
-    margin-top: 32rpx;
+    margin-top: $spacing-lg;
     background: #fff;
     color: #667eea;
-    font-size: 32rpx;
+    font-size: $font-lg;
     font-weight: 500;
     border-radius: $radius-full;
   }
@@ -350,8 +349,8 @@ onReachBottom(() => {
 .stats-section {
   display: flex;
   background: #fff;
-  margin: 24rpx;
-  padding: 32rpx;
+  margin: $spacing-md;
+  padding: $spacing-lg;
   border-radius: $radius-lg;
 
   .stat-item {
@@ -360,7 +359,7 @@ onReachBottom(() => {
 
     .stat-value {
       display: block;
-      font-size: 48rpx;
+      font-size: $font-xxl;
       font-weight: 600;
       color: $primary-color;
     }
@@ -369,94 +368,34 @@ onReachBottom(() => {
       display: block;
       font-size: 26rpx;
       color: $text-secondary;
-      margin-top: 8rpx;
+      margin-top: $spacing-xs;
     }
   }
 }
 
 .records-section {
   background: #fff;
-  margin: 24rpx;
-  padding: 24rpx;
+  margin: $spacing-md;
+  padding: $spacing-md;
   border-radius: $radius-lg;
 
   .section-title {
-    font-size: 32rpx;
+    font-size: $font-lg;
     font-weight: 500;
     color: $text-color;
-    margin-bottom: 24rpx;
+    margin-bottom: $spacing-md;
   }
 
-  .record-list {
-    .record-item {
-      display: flex;
-      align-items: center;
-      padding: 20rpx 0;
-      border-bottom: 1rpx solid $border-color;
-
-      &:last-child {
-        border-bottom: none;
-      }
-
-      .record-avatar {
-        width: 80rpx;
-        height: 80rpx;
-        border-radius: 50%;
-        overflow: hidden;
-
-        image {
-          width: 100%;
-          height: 100%;
-        }
-      }
-
-      .record-info {
-        flex: 1;
-        margin-left: 20rpx;
-
-        .record-name {
-          display: block;
-          font-size: 28rpx;
-          color: $text-color;
-        }
-
-        .record-time {
-          display: block;
-          font-size: 24rpx;
-          color: $text-placeholder;
-          margin-top: 4rpx;
-        }
-      }
-
-      .record-reward {
-        .reward-text {
-          font-size: 28rpx;
-          color: $primary-color;
-          font-weight: 500;
-        }
-
-        .pending-text {
-          font-size: 26rpx;
-          color: $text-placeholder;
-        }
-      }
-    }
+  .reward-text {
+    font-size: $font-md;
+    color: $primary-color;
+    font-weight: 500;
   }
-}
 
-.load-more,
-.no-more {
-  text-align: center;
-  padding: 32rpx;
-  color: $text-placeholder;
-  font-size: 26rpx;
-}
-
-.empty {
-  text-align: center;
-  padding: 60rpx 0;
-  color: $text-placeholder;
-  font-size: 28rpx;
+  .pending-text {
+    font-size: 26rpx;
+    color: $text-placeholder;
+  }
 }
 
 // 海报弹窗
@@ -483,7 +422,7 @@ onReachBottom(() => {
     }
 
     .poster-actions {
-      padding: 24rpx;
+      padding: $spacing-md;
 
       .save-btn {
         width: 100%;

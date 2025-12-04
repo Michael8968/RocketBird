@@ -1,24 +1,10 @@
 <template>
   <view class="benefits-page">
     <!-- 福利统计 -->
-    <view class="stats-card">
-      <view class="stat-item">
-        <text class="value">{{ benefitStats.total }}</text>
-        <text class="label">全部福利</text>
-      </view>
-      <view class="stat-item">
-        <text class="value">{{ benefitStats.pending }}</text>
-        <text class="label">待领取</text>
-      </view>
-      <view class="stat-item">
-        <text class="value">{{ benefitStats.claimed }}</text>
-        <text class="label">已领取</text>
-      </view>
-      <view class="stat-item">
-        <text class="value">{{ benefitStats.used }}</text>
-        <text class="label">已使用</text>
-      </view>
-    </view>
+    <StatCard
+      :stats="statItems"
+      gradient="linear-gradient(135deg, #ff6b6b, #ee5a24)"
+    />
 
     <!-- 筛选 -->
     <view class="filter-bar">
@@ -89,18 +75,18 @@
       </view>
 
       <!-- 加载更多 -->
-      <view class="load-more" v-if="hasMore">
-        <text @click="loadMore">加载更多</text>
-      </view>
-      <view class="no-more" v-else-if="records.length > 0">
-        <text>没有更多了</text>
-      </view>
+      <LoadMore
+        v-if="records.length > 0"
+        :loading="loading"
+        :has-more="hasMore"
+        @load="loadMore"
+      />
 
       <!-- 空状态 -->
-      <view class="empty" v-if="!loading && records.length === 0">
-        <image src="/static/empty.png" mode="aspectFit" class="empty-image" />
-        <text>暂无福利</text>
-      </view>
+      <EmptyState
+        v-if="!loading && records.length === 0"
+        text="暂无福利"
+      />
     </view>
   </view>
 </template>
@@ -110,6 +96,7 @@ import { ref, computed } from 'vue';
 import { onShow, onReachBottom } from '@dcloudio/uni-app';
 import { benefitsApi } from '@/api';
 import { formatDate } from '@rocketbird/shared';
+import { StatCard, EmptyState, LoadMore } from '@/components';
 import type { GiftRecord } from '@rocketbird/shared';
 
 const loading = ref(false);
@@ -125,6 +112,13 @@ const benefitStats = ref({
   claimed: 0,
   used: 0,
 });
+
+const statItems = computed(() => [
+  { value: benefitStats.value.total, label: '全部福利' },
+  { value: benefitStats.value.pending, label: '待领取' },
+  { value: benefitStats.value.claimed, label: '已领取' },
+  { value: benefitStats.value.used, label: '已使用' },
+]);
 
 const getStatusValue = computed(() => {
   const map: Record<string, number | undefined> = {
@@ -223,7 +217,6 @@ const handleClaim = async (record: GiftRecord) => {
 
 // 使用福利
 const handleUse = (record: GiftRecord) => {
-  // 根据福利类型跳转到不同页面
   if (record.giftType === 'coupon') {
     uni.navigateTo({ url: '/pages/points/mall' });
   } else {
@@ -248,46 +241,19 @@ onReachBottom(() => {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-.stats-card {
-  display: flex;
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-  margin: 24rpx;
-  padding: 40rpx;
-  border-radius: $radius-lg;
-  color: #fff;
-
-  .stat-item {
-    flex: 1;
-    text-align: center;
-
-    .value {
-      display: block;
-      font-size: 48rpx;
-      font-weight: 600;
-    }
-
-    .label {
-      display: block;
-      font-size: 24rpx;
-      opacity: 0.9;
-      margin-top: 8rpx;
-    }
-  }
-}
-
 .filter-bar {
   display: flex;
   background: #fff;
-  margin: 0 24rpx;
-  padding: 16rpx;
+  margin: 0 $spacing-md;
+  padding: $spacing-sm;
   border-radius: $radius-lg;
-  gap: 16rpx;
+  gap: $spacing-sm;
 
   .filter-item {
     flex: 1;
     text-align: center;
-    padding: 16rpx;
-    font-size: 28rpx;
+    padding: $spacing-sm;
+    font-size: $font-md;
     color: $text-secondary;
     border-radius: $radius-md;
 
@@ -299,15 +265,15 @@ onReachBottom(() => {
 }
 
 .benefit-list {
-  margin: 24rpx;
+  margin: $spacing-md;
 
   .benefit-item {
     display: flex;
     align-items: center;
     background: #fff;
-    padding: 24rpx;
+    padding: $spacing-md;
     border-radius: $radius-lg;
-    margin-bottom: 16rpx;
+    margin-bottom: $spacing-sm;
 
     &.disabled {
       opacity: 0.6;
@@ -318,7 +284,7 @@ onReachBottom(() => {
       height: 100rpx;
       line-height: 100rpx;
       text-align: center;
-      font-size: 48rpx;
+      font-size: $font-xxl;
       background: $bg-color;
       border-radius: $radius-md;
     }
@@ -338,7 +304,7 @@ onReachBottom(() => {
         display: block;
         font-size: 26rpx;
         color: $text-secondary;
-        margin-top: 8rpx;
+        margin-top: $spacing-xs;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -346,9 +312,9 @@ onReachBottom(() => {
 
       .benefit-time {
         display: block;
-        font-size: 24rpx;
+        font-size: $font-sm;
         color: $text-placeholder;
-        margin-top: 8rpx;
+        margin-top: $spacing-xs;
       }
     }
 
@@ -379,29 +345,6 @@ onReachBottom(() => {
         }
       }
     }
-  }
-}
-
-.load-more,
-.no-more {
-  text-align: center;
-  padding: 32rpx;
-  color: $text-placeholder;
-  font-size: 26rpx;
-}
-
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 120rpx 0;
-  color: $text-placeholder;
-
-  .empty-image {
-    width: 200rpx;
-    height: 200rpx;
-    margin-bottom: 24rpx;
   }
 }
 </style>
